@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import bcrypt from 'bcrypt';
 import pg from 'pg'; // 1. Trocamos a biblioteca do banco de dados
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -31,13 +32,22 @@ if (!process.env.DATABASE_URL) {
 
 const pool = new pg.Pool({
     connectionString: process.env.DATABASE_URL,
-    // Em produção (no Render), é obrigatório usar SSL.
-    ssl: { rejectUnauthorized: false }
+    ssl: { rejectUnauthorized: false },
+    // --- OTIMIZAÇÕES PARA PRODUÇÃO ---
+    // Define o número máximo de clientes no pool. Ideal para os planos Starter do Render.
+    max: 20,
+    // Tempo em milissegundos que um cliente pode ficar ocioso antes de ser fechado.
+    idleTimeoutMillis: 30000,
+    // Tempo em milissegundos para esperar por uma conexão antes de dar erro.
+    connectionTimeoutMillis: 2000,
 });
 
 // 3. Função para criar o schema do banco de dados (tabelas e dados iniciais)
 const initializeDatabase = async () => {
     console.log("Inicializando o schema do banco de dados...");
+    // Hash da senha padrão 'senha123' para os usuários de teste.
+    const hashedDefaultPassword = await bcrypt.hash('senha123', 10);
+
     // Usamos 'SERIAL' para auto-incremento no PostgreSQL
     await pool.query(`
         CREATE TABLE IF NOT EXISTS avisos (
@@ -78,12 +88,12 @@ const initializeDatabase = async () => {
         )
     `);
     // Usamos 'ON CONFLICT DO NOTHING' para evitar erros se o usuário já existir
-    await pool.query("INSERT INTO usuarios (email, senha, nome, tipo, turma) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (email) DO NOTHING", ['aluno@iva.com', 'senha123', 'Gabriel (Novo)', 'aluno', 'A']);
-    await pool.query("INSERT INTO usuarios (email, senha, nome, tipo, turma) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (email) DO NOTHING", ['veterano@iva.com', 'senha123', 'Veterano', 'aluno', 'B']);
-    await pool.query("INSERT INTO usuarios (email, senha, nome, tipo, turma) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (email) DO NOTHING", ['isaack@iva.com', 'senha123', 'Prof. Isaack', 'professor', '']);
-    await pool.query("INSERT INTO usuarios (email, senha, nome, tipo, turma) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (email) DO NOTHING", ['maria@iva.com', 'senha123', 'Maria Silva', 'aluno', 'A']);
-    await pool.query("INSERT INTO usuarios (email, senha, nome, tipo, turma) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (email) DO NOTHING", ['joao@vale.com', 'senha123', 'João Santos', 'aluno', 'B']);
-    await pool.query("INSERT INTO usuarios (email, senha, nome, tipo, turma) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (email) DO NOTHING", ['amorosomhott@iva.com', 'senha123', 'Amoroso Mhota', 'aluno', 'B']);
+    await pool.query("INSERT INTO usuarios (email, senha, nome, tipo, turma) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (email) DO NOTHING", ['aluno@iva.com', hashedDefaultPassword, 'Gabriel (Novo)', 'aluno', 'A']);
+    await pool.query("INSERT INTO usuarios (email, senha, nome, tipo, turma) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (email) DO NOTHING", ['veterano@iva.com', hashedDefaultPassword, 'Veterano', 'aluno', 'B']);
+    await pool.query("INSERT INTO usuarios (email, senha, nome, tipo, turma) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (email) DO NOTHING", ['isaack@iva.com', hashedDefaultPassword, 'Prof. Isaack', 'professor', '']);
+    await pool.query("INSERT INTO usuarios (email, senha, nome, tipo, turma) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (email) DO NOTHING", ['maria@iva.com', hashedDefaultPassword, 'Maria Silva', 'aluno', 'A']);
+    await pool.query("INSERT INTO usuarios (email, senha, nome, tipo, turma) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (email) DO NOTHING", ['joao@vale.com', hashedDefaultPassword, 'João Santos', 'aluno', 'B']);
+    await pool.query("INSERT INTO usuarios (email, senha, nome, tipo, turma) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (email) DO NOTHING", ['amorosomhott@iva.com', hashedDefaultPassword, 'Amoroso Mhota', 'aluno', 'B']);
 
     await pool.query(`
         CREATE TABLE IF NOT EXISTS materias (
@@ -180,8 +190,18 @@ const checkAuth = async (req, res, next) => {
         next();
     } catch (err) {
         console.error("Erro no middleware de autenticação:", err);
-        return res.status(500).json({ error: "Erro interno de servidor" });
+        return res.status(500).json({ error: "Ocorreu um erro inesperado no servidor." });
     }
+};
+
+// --- MIDDLEWARE DE SEGURANÇA (PROFESSOR) ---
+const isProfessor = (req, res, next) => {
+    // Este middleware deve ser usado DEPOIS do checkAuth
+    if (req.user && req.user.tipo === 'professor') {
+        return next(); // O usuário é um professor, pode prosseguir
+    }
+    // Se não for professor, nega o acesso
+    return res.status(403).json({ error: "Acesso negado. Recurso exclusivo para professores." });
 };
 
 // 4. Rotas da API (Onde o Frontend vai bater)
@@ -197,18 +217,25 @@ app.post('/login', async (req, res) => {
     // Adiciona @iva.com se o email não contiver @
     const formattedEmail = email.includes('@') ? email : `${email}@iva.com`;
 
-    console.log(`Tentando login para: ${formattedEmail}`);
-
     try {
-        const result = await pool.query("SELECT * FROM usuarios WHERE email = $1 AND senha = $2", [formattedEmail, userPassword]);
+        // 1. Busca o usuário pelo e-mail
+        const result = await pool.query("SELECT * FROM usuarios WHERE email = $1", [formattedEmail]);
+
         if (result.rows.length > 0) {
-            res.json({ message: 'success', user: result.rows[0] });
+            const user = result.rows[0];
+            // 2. Compara a senha fornecida com o hash salvo no banco
+            const validPassword = await bcrypt.compare(userPassword, user.senha);
+            if (validPassword) {
+                res.json({ message: 'success', user: user });
+            } else {
+                res.status(401).json({ message: 'Usuário ou senha incorretos' });
+            }
         } else {
             res.status(401).json({ message: 'Usuário ou senha incorretos' });
         }
     } catch (err) {
         console.error("Erro no login:", err);
-        return res.status(500).json({ error: err.message });
+        return res.status(500).json({ error: "Ocorreu um erro inesperado no servidor." });
     }
 });
 
@@ -218,14 +245,19 @@ app.post('/register', async (req, res) => {
     // Garante que o email tenha o domínio @iva.com
     const formattedEmail = email.includes('@') ? email : `${email}@iva.com`;
 
+    // Criptografa a senha antes de salvar
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(senha, salt);
+
     const sql = "INSERT INTO usuarios (email, senha, nome, tipo, turma) VALUES ($1, $2, $3, $4, $5) RETURNING id";
-    const params = [formattedEmail, senha, nome, tipo || 'aluno', turma || 'A']; // Padrão Turma A se não informado
+    const params = [formattedEmail, hashedPassword, nome, tipo || 'aluno', turma || 'A']; // Padrão Turma A se não informado
 
     try {
         const result = await pool.query(sql, params);
         res.json({ "message": "success", "id": result.rows[0].id });
     } catch (err) {
-        return res.status(400).json({ "error": err.message });
+        console.error("Erro ao registrar usuário:", err);
+        return res.status(400).json({ "error": "Não foi possível criar o usuário. O e-mail pode já estar em uso." });
     }
 });
 
@@ -237,7 +269,8 @@ app.get('/usuarios/:id', async (req, res) => {
         const result = await pool.query("SELECT id, email, nome, tipo, turma, foto FROM usuarios WHERE id = $1", [id]);
         res.json({ message: "success", data: result.rows[0] });
     } catch (err) {
-        return res.status(400).json({ error: err.message });
+        console.error(`Erro ao buscar usuário ${id}:`, err);
+        return res.status(400).json({ error: "Usuário não encontrado." });
     }
 });
 
@@ -256,7 +289,12 @@ app.put('/usuarios/:id', async (req, res) => {
     let paramIndex = 1;
 
     if (nome) { updates.push(`nome = $${paramIndex++}`); params.push(nome); }
-    if (senha) { updates.push(`senha = $${paramIndex++}`); params.push(senha); }
+    if (senha) {
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(senha, salt);
+        updates.push(`senha = $${paramIndex++}`);
+        params.push(hashedPassword);
+    }
     if (foto) { updates.push(`foto = $${paramIndex++}`); params.push(foto); }
 
     if (updates.length === 0) return res.json({ message: "success", changes: 0 });
@@ -266,10 +304,10 @@ app.put('/usuarios/:id', async (req, res) => {
 
     try {
         const result = await pool.query(sql, params);
-        console.log(`Perfil atualizado para ID ${id}. Alterações: ${result.rowCount}`);
         res.json({ message: "success", changes: result.rowCount });
     } catch (err) {
-        return res.status(400).json({ error: err.message });
+        console.error(`Erro ao atualizar perfil ${id}:`, err);
+        return res.status(400).json({ error: "Não foi possível atualizar o perfil." });
     }
 });
 
@@ -298,7 +336,8 @@ app.get('/avisos', async (req, res) => {
             "data": result.rows
         });
     } catch (err) {
-        return res.status(400).json({ "error": err.message });
+        console.error("Erro ao buscar avisos:", err);
+        return res.status(500).json({ "error": "Ocorreu um erro inesperado no servidor." });
     }
 });
 
@@ -325,7 +364,8 @@ app.get('/materias', async (req, res) => {
         const result = await pool.query(sql, params);
         res.json({ "message": "success", "data": result.rows });
     } catch (err) {
-        return res.status(400).json({ "error": err.message });
+        console.error("Erro ao buscar matérias:", err);
+        return res.status(500).json({ "error": "Ocorreu um erro inesperado no servidor." });
     }
 });
 
@@ -347,7 +387,8 @@ app.get('/alunos', async (req, res) => {
         const result = await pool.query(sql, params);
         res.json({ "message": "success", "data": result.rows });
     } catch (err) {
-        return res.status(400).json({ "error": err.message });
+        console.error("Erro ao buscar alunos:", err);
+        return res.status(500).json({ "error": "Ocorreu um erro inesperado no servidor." });
     }
 });
 
@@ -386,12 +427,13 @@ app.get('/frequencia', async (req, res) => {
         const result = await pool.query(sql, params);
         res.json({ "message": "success", "data": result.rows });
     } catch (err) {
-        return res.status(400).json({ "error": err.message });
+        console.error("Erro ao buscar frequência:", err);
+        return res.status(500).json({ "error": "Ocorreu um erro inesperado no servidor." });
     }
 });
 
 // Rota para SALVAR Frequência (POST)
-app.post('/frequencia', async (req, res) => {
+app.post('/frequencia', isProfessor, async (req, res) => {
     const { aluno_id, disciplina, data, status, turma } = req.body;
 
     const sql = `
@@ -404,7 +446,8 @@ app.post('/frequencia', async (req, res) => {
         await pool.query(sql, [aluno_id, disciplina, data, status, turma]);
         res.json({ message: "success" });
     } catch (err) {
-        return res.status(400).json({ error: err.message });
+        console.error("Erro ao salvar frequência:", err);
+        return res.status(400).json({ error: "Não foi possível salvar a frequência." });
     }
 });
 
@@ -424,13 +467,13 @@ app.get('/notas', async (req, res) => {
         const result = await pool.query(sql, params);
         res.json({ message: "success", data: result.rows });
     } catch (err) {
-        console.error(err);
-        return res.json({ message: "success", data: [] });
+        console.error("Erro ao buscar notas:", err);
+        return res.status(500).json({ "error": "Ocorreu um erro inesperado no servidor." });
     }
 });
 
 // Rota para SALVAR Notas (POST - Upsert)
-app.post('/notas', async (req, res) => {
+app.post('/notas', isProfessor, async (req, res) => {
     let { aluno_id, materia, turma, nota1, nota2 } = req.body;
 
     // Sanitização: Garante que vazios virem NULL e números sejam float
@@ -443,13 +486,13 @@ app.post('/notas', async (req, res) => {
         await pool.query(sql, [aluno_id, materia, turma, nota1, nota2]);
         res.json({ message: "success" });
     } catch (err) {
-        console.error("Erro ao salvar nota:", err.message);
-        return res.status(400).json({ error: err.message });
+        console.error("Erro ao salvar nota:", err);
+        return res.status(400).json({ error: "Não foi possível salvar a nota." });
     }
 });
 
 // Rota para CRIAR uma matéria (POST)
-app.post('/materias', async (req, res) => {
+app.post('/materias', isProfessor, async (req, res) => {
     const { nome, professor, turma, horario } = req.body;
     const sql = "INSERT INTO materias (nome, professor, turma, horario) VALUES ($1, $2, $3, $4) RETURNING id";
     const params = [nome, professor, turma, horario];
@@ -458,12 +501,13 @@ app.post('/materias', async (req, res) => {
         const result = await pool.query(sql, params);
         res.json({ "message": "success", "id": result.rows[0].id });
     } catch (err) {
-        return res.status(400).json({ "error": err.message });
+        console.error("Erro ao criar matéria:", err);
+        return res.status(400).json({ "error": "Não foi possível criar a matéria." });
     }
 });
 
 // Rota para ATUALIZAR uma matéria (PUT)
-app.put('/materias/:id', async (req, res) => {
+app.put('/materias/:id', isProfessor, async (req, res) => {
     const { nome, professor, turma, horario } = req.body;
     const { id } = req.params;
     const sql = "UPDATE materias SET nome = $1, professor = $2, turma = $3, horario = $4 WHERE id = $5";
@@ -473,12 +517,13 @@ app.put('/materias/:id', async (req, res) => {
         const result = await pool.query(sql, params);
         res.json({ "message": "success", "changes": result.rowCount });
     } catch (err) {
-        return res.status(400).json({ "error": err.message });
+        console.error(`Erro ao atualizar matéria ${id}:`, err);
+        return res.status(400).json({ "error": "Não foi possível atualizar a matéria." });
     }
 });
 
 // Rota para DELETAR uma matéria (DELETE)
-app.delete('/materias/:id', async (req, res) => {
+app.delete('/materias/:id', isProfessor, async (req, res) => {
     const { id } = req.params;
     const sql = "DELETE FROM materias WHERE id = $1";
 
@@ -486,12 +531,13 @@ app.delete('/materias/:id', async (req, res) => {
         const result = await pool.query(sql, [id]);
         res.json({ "message": "deleted", "changes": result.rowCount });
     } catch (err) {
-        return res.status(400).json({ "error": err.message });
+        console.error(`Erro ao deletar matéria ${id}:`, err);
+        return res.status(400).json({ "error": "Não foi possível deletar a matéria." });
     }
 });
 
 // Rota para POPULAR matérias (Seed) - Cria turmas padrão para o professor
-app.post('/materias/seed', async (req, res) => {
+app.post('/materias/seed', isProfessor, async (req, res) => {
     const { professor } = req.body;
     // Usa o nome fornecido ou 'Prof. Isaack' como padrão. Adiciona 'Prof.' se não tiver.
     const profName = professor ? (professor.includes('Prof.') ? professor : `Prof. ${professor}`) : 'Prof. Isaack';
@@ -507,12 +553,13 @@ app.post('/materias/seed', async (req, res) => {
         await pool.query(sql, ['Homilética', profName, 'B', 'Qua 20:00']);
         res.json({ "message": "success" });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error("Erro ao popular matérias:", err);
+        res.status(500).json({ error: "Ocorreu um erro inesperado no servidor." });
     }
 });
 
 // Rota para CRIAR um aviso (POST) - Simulação do Professor criando aviso
-app.post('/avisos', async (req, res) => {
+app.post('/avisos', isProfessor, async (req, res) => {
     const { titulo, mensagem, categoria, data, turma, aluno_id, autor } = req.body;
 
     // Garante que o autor seja preenchido. Se vier vazio, assume 'Prof. Isaack'
@@ -528,19 +575,21 @@ app.post('/avisos', async (req, res) => {
             "id": result.rows[0].id
         });
     } catch (err) {
-        return res.status(400).json({ "error": err.message });
+        console.error("Erro ao criar aviso:", err);
+        return res.status(400).json({ "error": "Não foi possível criar o aviso." });
     }
 });
 
 // Rota para DELETAR um aviso (DELETE)
-app.delete('/avisos/:id', async (req, res) => {
+app.delete('/avisos/:id', isProfessor, async (req, res) => {
     const { id } = req.params;
     const sql = "DELETE FROM avisos WHERE id = $1";
     try {
         const result = await pool.query(sql, [id]);
         res.json({ "message": "deleted", "changes": result.rowCount });
     } catch (err) {
-        return res.status(400).json({ "error": err.message });
+        console.error(`Erro ao deletar aviso ${id}:`, err);
+        return res.status(400).json({ "error": "Não foi possível deletar o aviso." });
     }
 });
 
@@ -565,12 +614,13 @@ app.get('/eventos', async (req, res) => {
             "data": result.rows
         });
     } catch (err) {
-        return res.status(400).json({ "error": err.message });
+        console.error("Erro ao buscar eventos:", err);
+        return res.status(500).json({ "error": "Ocorreu um erro inesperado no servidor." });
     }
 });
 
 // CRIAR evento (Para o Professor adicionar no Calendário)
-app.post('/eventos', async (req, res) => {
+app.post('/eventos', isProfessor, async (req, res) => {
     const { titulo, descricao, data, categoria, tipo, turma, cor, materia } = req.body;
     const sql = "INSERT INTO eventos (titulo, descricao, data, categoria, tipo, turma, cor, materia) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id";
     const params = [titulo, descricao, data, categoria, tipo, turma, cor, materia];
@@ -579,12 +629,13 @@ app.post('/eventos', async (req, res) => {
         const result = await pool.query(sql, params);
         res.json({ "message": "success", "id": result.rows[0].id });
     } catch (err) {
-        return res.status(400).json({ "error": err.message });
+        console.error("Erro ao criar evento:", err);
+        return res.status(400).json({ "error": "Não foi possível criar o evento." });
     }
 });
 
 // ATUALIZAR evento (Editar planejamento)
-app.put('/eventos/:id', async (req, res) => {
+app.put('/eventos/:id', isProfessor, async (req, res) => {
     const { titulo, descricao, data, categoria, tipo, turma, cor, materia } = req.body;
     const { id } = req.params;
     const sql = "UPDATE eventos SET titulo = $1, descricao = $2, data = $3, categoria = $4, tipo = $5, turma = $6, cor = $7, materia = $8 WHERE id = $9";
@@ -594,24 +645,26 @@ app.put('/eventos/:id', async (req, res) => {
         const result = await pool.query(sql, params);
         res.json({ "message": "success", "changes": result.rowCount });
     } catch (err) {
-        return res.status(400).json({ "error": err.message });
+        console.error(`Erro ao atualizar evento ${id}:`, err);
+        return res.status(400).json({ "error": "Não foi possível atualizar o evento." });
     }
 });
 
 // DELETAR evento (Excluir planejamento)
-app.delete('/eventos/:id', async (req, res) => {
+app.delete('/eventos/:id', isProfessor, async (req, res) => {
     const { id } = req.params;
     const sql = "DELETE FROM eventos WHERE id = $1";
     try {
         const result = await pool.query(sql, [id]);
         res.json({ "message": "deleted", "changes": result.rowCount });
     } catch (err) {
-        return res.status(400).json({ "error": err.message });
+        console.error(`Erro ao deletar evento ${id}:`, err);
+        return res.status(400).json({ "error": "Não foi possível deletar o evento." });
     }
 });
 
 // ATUALIZAR aviso (Editar aviso)
-app.put('/avisos/:id', async (req, res) => {
+app.put('/avisos/:id', isProfessor, async (req, res) => {
     const { titulo, mensagem, categoria, data, turma } = req.body;
     const { id } = req.params;
     const sql = "UPDATE avisos SET titulo = $1, mensagem = $2, categoria = $3, data = $4, turma = $5 WHERE id = $6";
@@ -621,7 +674,8 @@ app.put('/avisos/:id', async (req, res) => {
         const result = await pool.query(sql, params);
         res.json({ "message": "success", "changes": result.rowCount });
     } catch (err) {
-        return res.status(400).json({ "error": err.message });
+        console.error(`Erro ao atualizar aviso ${id}:`, err);
+        return res.status(400).json({ "error": "Não foi possível atualizar o aviso." });
     }
 });
 
@@ -637,7 +691,8 @@ app.post('/suporte', async (req, res) => {
         );
         res.json({ message: "success", id: result.rows[0].id });
     } catch (err) {
-        return res.status(400).json({ error: err.message });
+        console.error("Erro ao enviar mensagem de suporte:", err);
+        return res.status(400).json({ error: "Não foi possível enviar a mensagem." });
     }
 });
 
@@ -664,12 +719,13 @@ app.get('/suporte', async (req, res) => {
         const result = await pool.query(sql, params);
         res.json({ message: "success", data: result.rows });
     } catch (err) {
-        return res.status(400).json({ error: err.message });
+        console.error("Erro ao buscar mensagens de suporte:", err);
+        return res.status(500).json({ "error": "Ocorreu um erro inesperado no servidor." });
     }
 });
 
 // Rota para RESPONDER mensagem de suporte (PUT)
-app.put('/suporte/:id', async (req, res) => {
+app.put('/suporte/:id', isProfessor, async (req, res) => {
     const { resposta, status } = req.body;
     const { id } = req.params;
 
@@ -677,7 +733,8 @@ app.put('/suporte/:id', async (req, res) => {
         const result = await pool.query("UPDATE mensagens_suporte SET resposta = $1, status = $2 WHERE id = $3", [resposta, status || 'Respondido', id]);
         res.json({ message: "success", changes: result.rowCount });
     } catch (err) {
-        return res.status(400).json({ error: err.message });
+        console.error(`Erro ao responder suporte ${id}:`, err);
+        return res.status(400).json({ error: "Não foi possível responder a mensagem." });
     }
 });
 
