@@ -1,0 +1,22 @@
+{
+  "name": "portal-iva",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "npx tailwindcss -i ./src/input.css -o ./dist/output.css --watch"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.19.2",
+    "react-router-dom": "^7.12.0"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.0.0"
+  }
+}

@@ -1,0 +1,24 @@
+# =================================================================
+# Arquivo .gitignore para o projeto Portal IVA
+# =================================================================
+
+# Pasta de dependências do Node.js (SEMPRE ignorar)
+# Esta pasta pode ter centenas de megabytes e é recriada com 'npm install'.
+node_modules/
+
+# Arquivos de ambiente
+# Contêm senhas, chaves de API e outras informações sensíveis.
+.env
+.env.*
+!.env.example
+
+# Arquivos de log
+*.log
+npm-debug.log*
+
+# Arquivos de configuração de editores de código
+.vscode/
+
+# Arquivos de sistema operacional (macOS e Windows)
+.DS_Store
+Thumbs.db

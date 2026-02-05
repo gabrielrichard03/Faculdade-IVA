@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="pt-br" class="h-full bg-gray-100">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suporte ao Aluno | Portal do Professor IVA</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- CSS Personalizado -->
+    <link href="../custom.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- 1. Conecta o script de configuração da API (carrega primeiro) -->
+    <script src="../js/config.js"></script>
+
+    <!-- Script para Modo Escuro -->
+    <script>
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
+</head>
+
+<body class="h-full">
+
+    <div x-data="professorSupportApp()" x-init="init()" class="flex h-screen bg-gray-100">
+        <!-- Menu Lateral (Sidebar) -->
+        <aside
+            class="fixed inset-y-0 left-0 z-30 flex flex-col w-64 px-4 py-8 overflow-y-auto bg-white border-r transition-transform duration-300 ease-in-out transform lg:translate-x-0"
+            :class="{'translate-x-0': sidebarOpen, '-translate-x-full': !sidebarOpen}"
+            x-on:click.away="sidebarOpen = false">
+
+            <div class="flex items-center justify-between">
+                <img src="../assets/logo-iva.png" alt="Logo Instituto Vale da Amazônia"
+                    class="h-14 w-auto object-contain">
+                <button x-on:click="sidebarOpen = false" class="text-gray-600 lg:hidden">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <nav class="flex-1 mt-8 space-y-2">
+                <a href="dashboardProfessor.html"
+                    class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-lg transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                    </svg>
+                    <span class="ml-3">Painel</span>
+                </a>
+                <!-- 2. Minhas Turmas -->
+                <a href="minhasTurmas.html"
+                    class="flex items-center px-4 py-2 text-gray-600 transition-colors duration-200 transform rounded-lg hover:bg-gray-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                    <span class="ml-3">Minhas Turmas</span>
+                </a>
+
+                <!-- 3. Agenda -->
+                <a href="criarEvento.html"
+                    class="flex items-center px-4 py-2 text-gray-600 transition-colors duration-200 transform rounded-lg hover:bg-gray-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span class="ml-3">Agenda</span>
+                </a>
+                <!-- 3. Lançar Notas -->
+                <a href="lancarNotas.html"
+                    class="flex items-center px-4 py-2 text-gray-600 transition-colors duration-200 transform rounded-lg hover:bg-gray-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    <span class="ml-3">Lançar Notas</span>
+                </a>
+                <!-- 4. Gestão de Atividades -->
+                <a href="atividadesProfessor.html"
+                    class="flex items-center px-4 py-2 text-gray-600 transition-colors duration-200 transform rounded-lg hover:bg-gray-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg>
+                    <span class="ml-3">Atividades</span>
+                </a>
+
+                <a href="criarAviso.html"
+                    class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                    </svg>
+                    <span class="ml-3">Avisos</span>
+                </a>
+
+
+                <!-- Link Ativo: Suporte -->
+                <a href="suportep.html" class="flex items-center px-4 py-2 text-white bg-green-900 rounded-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    <span class="ml-3">Suporte</span>
+                </a>
+
+                <a href="perfil.html"
+                    class="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-lg transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    <span class="ml-3">Perfil</span>
+                </a>
+                <!-- 5. Configurações -->
+                <a href="configuracoesProfessor.html"
+                    class="flex items-center px-4 py-2 text-gray-600 transition-colors duration-200 transform rounded-lg hover:bg-gray-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span class="ml-3">Configurações</span>
+                </a>
+
+            </nav>
+
+            <div class="mt-auto">
+                <button @click="logoutModalOpen = true"
+                    class="flex w-full items-center px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-lg transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    <span class="ml-3">Sair</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Conteúdo Principal -->
+        <div class="flex flex-col flex-1 overflow-y-auto lg:ml-64">
+            <header class="flex items-center justify-between px-6 py-4 bg-white border-b">
+                <button x-on:click.stop="sidebarOpen = true" class="text-gray-500 focus:outline-none lg:hidden">
+                    <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M4 6H20M4 12H20M4 18H11" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+                </button>
+                <div class="flex items-center ml-auto">
+                    <span class="mr-4 font-medium text-gray-700"
+                        x-text="'Olá, ' + (user.nome ? user.nome.split(' ')[0] : 'Professor') + '!'"></span>
+                    <div class="relative">
+                        <img class="object-cover w-10 h-10 rounded-full"
+                            :src="user.foto || 'https://ui-avatars.com/api/?name=' + (user.nome || 'Professor') + '&background=0D9488&color=fff'"
+                            alt="Foto de perfil">
+                        <span
+                            class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
+                    </div>
+                </div>
+            </header>
+
+            <main class="flex-1 p-6">
+                <h1 class="text-2xl font-semibold text-gray-800">Central de Suporte</h1>
+                <p class="mt-2 text-gray-600">Responda às dúvidas e solicitações dos alunos.</p>
+
+                <div class="mt-8 space-y-4">
+                    <!-- Loading -->
+                    <div x-show="isLoading" class="space-y-4">
+                        <div class="h-24 bg-gray-200 rounded-lg animate-pulse"></div>
+                        <div class="h-24 bg-gray-200 rounded-lg animate-pulse"></div>
+                    </div>
+
+                    <!-- Lista de Mensagens -->
+                    <template x-for="msg in messages" :key="msg.id">
+                        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <span class="text-xs font-bold px-2 py-0.5 rounded-full"
+                                            :class="msg.status === 'Respondido' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'"
+                                            x-text="msg.status"></span>
+                                        <span class="text-xs text-gray-500"
+                                            x-text="new Date(msg.data).toLocaleDateString()"></span>
+                                    </div>
+                                    <h3 class="text-lg font-bold text-gray-800" x-text="msg.assunto"></h3>
+                                    <p class="text-sm text-gray-600 mt-1">
+                                        <span class="font-semibold">Aluno:</span> <span x-text="msg.aluno_nome"></span>
+                                        (Turma <span x-text="msg.aluno_turma"></span>)
+                                    </p>
+                                    <p class="text-gray-700 mt-3 bg-gray-50 p-3 rounded border border-gray-100"
+                                        x-text="msg.mensagem"></p>
+
+                                    <!-- Exibe a resposta se já houver -->
+                                    <div x-show="msg.resposta" class="mt-4 pl-4 border-l-4 border-green-500">
+                                        <p class="text-xs text-gray-500 font-bold uppercase">Sua Resposta:</p>
+                                        <p class="text-gray-700 text-sm mt-1" x-text="msg.resposta"></p>
+                                    </div>
+                                </div>
+
+                                <button x-show="msg.status !== 'Respondido'" @click="openReplyModal(msg)"
+                                    class="ml-4 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors flex items-center shrink-0">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-2" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                                    </svg>
+                                    Responder
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+
+                    <div x-show="!isLoading && messages.length === 0" class="text-center py-10 text-gray-500">
+                        Nenhuma mensagem de suporte encontrada.
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- Modal de Resposta -->
+        <div x-show="replyModalOpen"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm"
+            style="display: none;">
+            <div class="bg-white rounded-lg shadow-lg w-full max-w-lg p-6" @click.away="replyModalOpen = false">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">Responder Aluno</h3>
+                <p class="text-sm text-gray-600 mb-2">Assunto: <span class="font-semibold"
+                        x-text="currentMessage.assunto"></span></p>
+
+                <textarea x-model="replyText" rows="5"
+                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-900 focus:outline-none resize-none"
+                    placeholder="Digite sua resposta aqui..."></textarea>
+
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button @click="replyModalOpen = false"
+                        class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">Cancelar</button>
+                    <button @click="sendReply()"
+                        class="px-4 py-2 bg-green-900 text-white rounded-lg hover:bg-green-800 transition-colors">Enviar
+                        Resposta</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de Logout -->
+        <div x-show="logoutModalOpen"
+            class="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm"
+            style="display: none;">
+            <div class="bg-white rounded-lg shadow-lg w-96 p-6" @click.away="logoutModalOpen = false">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">Sair da Conta</h3>
+                <p class="text-gray-600 mb-6">Tem certeza que deseja sair do portal?</p>
+                <div class="flex justify-end space-x-4">
+                    <button @click="logoutModalOpen = false"
+                        class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">Cancelar</button>
+                    <a href="../../index.html"
+                        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">Sair</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function professorSupportApp() {
+            return {
+                sidebarOpen: false,
+                logoutModalOpen: false,
+                replyModalOpen: false,
+                isLoading: true,
+                user: {},
+                messages: [],
+                currentMessage: {},
+                replyText: '',
+
+                async init() {
+                    const userStr = sessionStorage.getItem('user');
+                    this.user = userStr ? JSON.parse(userStr) : {};
+
+                    if (!this.user || this.user.tipo !== 'professor') {
+                        window.location.href = '../../index.html';
+                        return;
+                    }
+                    await this.fetchMessages();
+                },
+
+                async fetchMessages() {
+                    try {
+                        const response = await fetch(`${API_URL}/suporte`, {
+                            headers: { 'x-user-id': this.user.id }
+                        });
+                        const data = await response.json();
+                        if (data.message === 'success') {
+                            this.messages = data.data;
+                        }
+                    } catch (error) {
+                        console.error("Erro ao buscar mensagens", error);
+                    } finally {
+                        this.isLoading = false;
+                    }
+                },
+
+                openReplyModal(msg) {
+                    this.currentMessage = msg;
+                    this.replyText = '';
+                    this.replyModalOpen = true;
+                },
+
+                async sendReply() {
+                    if (!this.replyText.trim()) return alert("Digite uma resposta.");
+
+                    try {
+                        const response = await fetch(`${API_URL}/suporte/${this.currentMessage.id}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'x-user-id': this.user.id
+                            },
+                            body: JSON.stringify({
+                                resposta: this.replyText,
+                                status: 'Respondido'
+                            })
+                        });
+
+                        if (response.ok) {
+                            alert("Resposta enviada com sucesso!");
+                            this.replyModalOpen = false;
+                            this.fetchMessages(); // Recarrega a lista
+                        } else {
+                            alert("Erro ao enviar resposta.");
+                        }
+                    } catch (error) {
+                        console.error(error);
+                        alert("Erro de conexão.");
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>

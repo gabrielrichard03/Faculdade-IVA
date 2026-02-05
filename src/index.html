@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-br" class="h-full">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Instituto Vale da Amazônia</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="custom.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- 1. Conecta o script de configuração da API (carrega primeiro) -->
+    <script src="js/config.js"></script>
+    <!-- 2. Conecta o script de login real -->
+    <script defer src="js/login.js"></script>
+    <!-- Script para Modo Escuro -->
+    <script>
+        // Aplica o tema escuro imediatamente para evitar FOUC (Flash Of Unstyled Content)
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
+    <style>
+        .btn-iva {
+            background-color: #14532d;
+            /* Verde Musgo Escuro */
+            transition: background-color 0.2s ease;
+        }
+
+        .btn-iva:hover {
+            background-color: #0f3f21;
+            /* Verde Oliva Profundo para hover */
+        }
+
+        /* Animação de entrada suave */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-entry {
+            animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+    </style>
+</head>
+
+<body class="h-full flex items-center justify-center bg-gray-100">
+
+    <div class="w-full max-w-md px-4 animate-entry">
+
+        <!-- 2. Cabeçalho (Fora do Card) -->
+        <div class="text-center mb-8">
+            <!-- Imagem da Logo -->
+            <img class="mx-auto mb-6 object-contain" style="width: 120px;" src="assets/login-iva.png"
+                alt="Logo Instituto Vale da Amazônia">
+
+            <!-- Título -->
+            <h1 class="text-3xl font-bold text-black mb-2 uppercase">
+                Instituto Vale da Amazônia – IVA
+            </h1>
+
+            <!-- Subtítulo -->
+            <p class="text-gray-500 font-medium">
+                Portal Acadêmico
+            </p>
+        </div>
+
+        <!-- 3. Card de Login -->
+        <div class="bg-white p-6 shadow-lg rounded-xl border border-gray-100">
+            <form id="login-form" class="space-y-4">
+
+                <!-- 4. Inputs -->
+                <div>
+                    <label for="username" class="block text-sm font-medium text-gray-700 mb-1 pl-1">
+                        Usuário
+                    </label>
+                    <input id="username" name="email" type="text" autocomplete="username" required
+                        class="block w-full rounded-lg border-0 bg-white px-3 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-green-800 sm:text-sm sm:leading-6 outline-none transition-all">
+                </div>
+
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-1 pl-1">
+                        Senha
+                    </label>
+                    <input id="password" name="password" type="password" autocomplete="current-password" required
+                        class="block w-full rounded-lg border-0 bg-white px-3 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-green-800 sm:text-sm sm:leading-6 outline-none transition-all">
+                </div>
+
+                <!-- Mensagem de Erro (Oculta por padrão) -->
+                <div id="error-message"
+                    class="hidden text-red-600 text-sm text-center font-medium bg-red-50 p-2 rounded-lg">
+                    Usuário ou senha incorretos.
+                </div>
+
+                <!-- 5. Botão de Ação -->
+                <div class="pt-1">
+                    <button id="login-button" type="submit"
+                        class="flex w-full justify-center rounded-lg border border-transparent btn-iva py-2 px-4 text-sm font-bold text-white shadow-md focus:outline-none focus:ring-2 focus:ring-green-900 focus:ring-offset-2">
+                        Entrar
+                    </button>
+                </div>
+            </form>
+
+            <!-- Link para Cadastro -->
+            <p class="text-center text-sm text-gray-500 mt-6">
+                Não tem uma conta?
+                <a href="register.html" class="font-medium text-green-700 hover:text-green-600">
+                    Registre-se aqui
+                </a>
+            </p>
+        </div>
+    </div>
+</body>
+
+</html>

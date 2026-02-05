@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-br" class="h-full">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro | Instituto Vale da Amazônia</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="custom.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- 1. Conecta o script de configuração da API (carrega primeiro) -->
+    <script src="js/config.js"></script>
+    <!-- 2. Conecta o script de cadastro -->
+    <script defer src="js/register.js"></script>
+    <style>
+        .btn-iva {
+            background-color: #14532d;
+            transition: background-color 0.2s ease;
+        }
+
+        .btn-iva:hover {
+            background-color: #0f3f21;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-entry {
+            animation: fadeInUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+    </style>
+</head>
+
+<body class="h-full flex items-center justify-center bg-gray-100">
+
+    <div class="w-full max-w-md px-4 animate-entry">
+
+        <div class="text-center mb-8">
+            <img class="mx-auto mb-6 object-contain" style="width: 120px;" src="assets/login-iva.png"
+                alt="Logo Instituto Vale da Amazônia">
+            <h1 class="text-3xl font-bold text-black mb-2 uppercase">
+                Sua Conta IVA
+            </h1>
+            <p class="text-gray-500 font-medium">
+                Portal Acadêmico
+            </p>
+        </div>
+
+        <div class="bg-white p-6 shadow-lg rounded-xl border border-gray-100">
+            <form id="register-form" class="space-y-4">
+
+                <div>
+                    <label for="nome" class="block text-sm font-medium text-gray-700 mb-1 pl-1">Nome Completo</label>
+                    <input id="nome" name="nome" type="text" required
+                        class="block w-full rounded-lg border-0 bg-white px-3 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-green-800 sm:text-sm">
+                </div>
+
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1 pl-1">Usuário (sem
+                        @iva.com)</label>
+                    <input id="email" name="email" type="text" required
+                        class="block w-full rounded-lg border-0 bg-white px-3 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-green-800 sm:text-sm">
+                </div>
+
+                <div>
+                    <label for="senha" class="block text-sm font-medium text-gray-700 mb-1 pl-1">Senha</label>
+                    <input id="senha" name="senha" type="password" required
+                        class="block w-full rounded-lg border-0 bg-white px-3 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-green-800 sm:text-sm">
+                </div>
+
+                <div>
+                    <label for="turma" class="block text-sm font-medium text-gray-700 mb-1 pl-1">Turma</label>
+                    <select id="turma" name="turma"
+                        class="block w-full rounded-lg border-0 bg-white px-3 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-green-800 sm:text-sm">
+                        <option value="A">Turma A (Iniciante)</option>
+                        <option value="B">Turma B (Avançado)</option>
+                    </select>
+                </div>
+
+                <!-- Mensagem de Erro/Sucesso -->
+                <div id="message" class="hidden text-sm text-center font-medium p-2 rounded-lg"></div>
+
+                <div class="pt-1">
+                    <button type="submit"
+                        class="flex w-full justify-center rounded-lg border border-transparent btn-iva py-2 px-4 text-sm font-bold text-white shadow-md focus:outline-none focus:ring-2 focus:ring-green-900 focus:ring-offset-2">
+                        Criar Conta
+                    </button>
+                </div>
+            </form>
+
+            <p class="text-center text-sm text-gray-500 mt-6">
+                Já tem uma conta?
+                <a href="login.html" class="font-medium text-green-700 hover:text-green-600">
+                    Faça o login
+                </a>
+            </p>
+        </div>
+    </div>
+</body>
+
+</html>
