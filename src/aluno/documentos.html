@@ -343,58 +343,58 @@
                     <div class="bg-gray-50 p-4 rounded-lg mb-8 border border-gray-200">
                         <h3 class="text-sm font-bold text-gray-500 uppercase mb-2">Dados do Aluno</h3>
                         <div class="grid grid-cols-2 gap-4">
-                            <p class="text-gray-800"><span class="font-semibold">Nome:</span> Gabriel</p>
-                            <p class="text-gray-800"><span class="font-semibold">Matrícula:</span> 20230155</p>
-                            <p class="text-gray-800"><span class="font-semibold">Curso:</span> Teologia</p>
-                            <p class="text-gray-800"><span class="font-semibold">Período:</span> 2º Semestre</p>
+                            <p class="text-gray-800"><span class="font-semibold">Nome:</span> :/spa>gia</p>
+                            <p class="text-gray-800"><span class="font-semibold">Turma:</span> <span
+                                    x-text="user.turma || 'Não informada'"></span></p>
                         </div>
-                    </div>
 
-                    <!-- Tabela de Notas no PDF -->
-                    <table class="w-full mb-8">
-                        <thead>
-                            <tr class="bg-green-900 text-white">
-                                <th class="py-3 px-4 text-left rounded-tl-lg">Disciplina</th>
-                                <th class="py-3 px-4 text-center">Nota Final</th>
-                                <th class="py-3 px-4 text-center rounded-tr-lg">Situação</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-200">
-                            <template x-for="grade in grades" :key="grade.name">
-                                <tr>
-                                    <td class="py-3 px-4 text-gray-800" x-text="grade.name"></td>
-                                    <td class="py-3 px-4 text-center font-bold text-gray-800"
-                                        x-text="grade.grade.toFixed(1)"></td>
-                                    <td class="py-3 px-4 text-center">
-                                        <span class="px-2 py-1 rounded-full text-xs font-bold"
-                                            :class="grade.grade >= 7 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
-                                            x-text="grade.grade >= 7 ? 'APROVADO' : 'REPROVADO'"></span>
-                                    </td>
+                        <!-- Tabela de Notas no PDF -->
+                        <table class="w-full mb-8">
+                            <thead>
+                                <tr class="bg-green-900 text-white">
+                                    <th class="py-3 px-4 text-left rounded-tl-lg">Disciplina</th>
+                                    <th class="py-3 px-4 text-center">Nota Final</th>
+                                    <th class="py-3 px-4 text-center rounded-tr-lg">Situação</th>
                                 </tr>
-                            </template>
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                                <template x-for="grade in grades" :key="grade.name">
+                                    <tr>
+                                        <td class="py-3 px-4 text-gray-800" x-text="grade.name"></td>
+                                        <td class="py-3 px-4 text-center font-bold text-gray-800"
+                                            x-text="grade.grade.toFixed(1)"></td>
+                                        <td class="py-3 px-4 text-center">
+                                            <span class="px-2 py-1 rounded-full text-xs font-bold"
+                                                :class="grade.grade >= 7 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+                                                x-text="grade.grade >= 7 ? 'APROVADO' : 'REPROVADO'"></span>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
 
-                    <!-- Resumo Final -->
-                    <div class="flex justify-end mb-12">
-                        <div class="bg-green-50 p-4 rounded-lg border border-green-100 w-64">
-                            <div class="flex justify-between items-center mb-2">
-                                <span class="text-gray-600">Média Geral:</span>
-                                <span class="text-xl font-bold text-green-900" x-text="average.toFixed(2)"></span>
-                            </div>
-                            <div class="text-xs text-center text-green-700 font-medium" x-text="performanceAnalysis">
+                        <!-- Resumo Final -->
+                        <div class="flex justify-end mb-12">
+                            <div class="bg-green-50 p-4 rounded-lg border border-green-100 w-64">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-gray-600">Média Geral:</span>
+                                    <span class="text-xl font-bold text-green-900" x-text="average.toFixed(2)"></span>
+                                </div>
+                                <div class="text-xs text-center text-green-700 font-medium"
+                                    x-text="performanceAnalysis">
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Rodapé do PDF -->
-                    <div class="text-center border-t border-gray-200 pt-6">
-                        <p class="text-xs text-gray-400">Este documento foi gerado eletronicamente pelo Portal do Aluno
-                            IVA e possui validade para fins de acompanhamento acadêmico.</p>
-                        <p class="text-xs text-gray-400 mt-1">Autenticação Digital: <span
-                                x-text="Math.random().toString(36).substring(7).toUpperCase()"></span></p>
+                        <!-- Rodapé do PDF -->
+                        <div class="text-center border-t border-gray-200 pt-6">
+                            <p class="text-xs text-gray-400">Este documento foi gerado eletronicamente pelo Portal do
+                                Aluno
+                                IVA e possui validade para fins de acompanhamento acadêmico.</p>
+                            <p class="text-xs text-gray-400 mt-1">Autenticação Digital: <span
+                                    x-text="Math.random().toString(36).substring(7).toUpperCase()"></span></p>
+                        </div>
                     </div>
-                </div>
 
             </main>
         </div>
@@ -486,9 +486,9 @@
                     // Configurações do PDF
                     const opt = {
                         margin: 0,
-                        filename: 'Boletim_Escolar_Gabriel_IVA.pdf',
+                        filename: `Boletim_IVA_${(this.user.nome || 'Aluno').replace(/ /g, '_')}.pdf`,
                         image: { type: 'jpeg', quality: 0.98 },
-                        html2canvas: { scale: 2 }, // Melhora a qualidade
+                        html2canvas: { scale: 2 }, // Melhora a qualidade da imagem
                         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
                     };
 
@@ -508,7 +508,7 @@
                 downloadCertificate(courseName) {
                     alert(`Gerando Certificado de Conclusão para: ${courseName}\n\nO arquivo será baixado em instantes.`);
                 }
-            }
+            };
         }
     </script>
 </body>

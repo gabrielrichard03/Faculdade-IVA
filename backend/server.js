@@ -607,6 +607,9 @@ app.get('/eventos', async (req, res) => {
         params.push(turma);
     }
 
+    // Ordena por data para que os eventos mais próximos apareçam primeiro
+    sql += " ORDER BY data ASC";
+
     try {
         const result = await pool.query(sql, params);
         res.json({

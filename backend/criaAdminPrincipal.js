@@ -13,8 +13,8 @@ const adminUser = {
 
 // --- CONFIGURAÇÃO DE CONEXÃO ---
 // IMPORTANTE: Use uma variável de ambiente para a URL em produção.
-// No Render, configure a variável de ambiente 'EXTERNAL_DATABASE_URL' com o valor abaixo.
-const DATABASE_URL = process.env.EXTERNAL_DATABASE_URL || 'postgresql://banco_iva_user:gpW2tKCcwxGv3WatU4SlsbVpzrAx5Jfn@dpg-d61l7ajuibrs73e1lhbg-a.oregon-postgres.render.com/banco_iva';
+// A URL do banco de dados deve ser configurada como uma variável de ambiente.
+const DATABASE_URL = process.env.DATABASE_URL;
 
 const pool = new pg.Pool({
     connectionString: DATABASE_URL,
@@ -24,6 +24,12 @@ const pool = new pg.Pool({
 });
 
 const criarAdmin = async () => {
+    // Validação da variável de ambiente
+    if (!DATABASE_URL) {
+        console.error("❌ ERRO FATAL: A variável de ambiente DATABASE_URL não está definida.");
+        process.exit(1);
+    }
+
     console.log(`Criando/Atualizando usuário admin: ${adminUser.email}`);
 
     const salt = await bcrypt.genSalt(10);
