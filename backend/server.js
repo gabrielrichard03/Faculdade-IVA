@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import bcrypt from 'bcrypt';
+import 'dotenv/config'; // Importa e carrega as variáveis de ambiente do .env
 import pg from 'pg'; // 1. Trocamos a biblioteca do banco de dados
 import path from 'path';
 import { fileURLToPath } from 'url';

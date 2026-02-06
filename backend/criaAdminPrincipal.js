@@ -1,5 +1,6 @@
 import pg from 'pg';
 import bcrypt from 'bcrypt';
+import 'dotenv/config'; // Importa e carrega as variáveis de ambiente do .env
 
 // --- DADOS DO ADMINISTRADOR ---
 const adminUser = {

@@ -1,6 +1,7 @@
 import pg from 'pg';
 import bcrypt from 'bcrypt';
 
+import 'dotenv/config'; // Importa e carrega as variáveis de ambiente do .env
 // 1. Conexão com o banco de dados PostgreSQL do Render
 // A URL do banco de dados deve ser configurada como uma variável de ambiente.
 const DATABASE_URL = process.env.DATABASE_URL;
