@@ -19,8 +19,8 @@ const novoUsuario = {
     nome: "Aluno VIP",
     email: "vip@iva.com",
     senha: "123", // A senha será criptografada antes de ser salva
-    tipo: "aluno", // Opções: 'aluno' ou 'professor'
-    turma: "A"     // Opções: 'A' ou 'B'
+    tipo: "aluno",    // Opções: 'aluno' ou 'professor'
+    turma: "T-I2025"  // Opções: 'T-I2025', 'T-I2026', 'T-N2026'
 };
 // -------------------------------------------------------
 

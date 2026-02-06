@@ -89,12 +89,12 @@ const initializeDatabase = async () => {
         )
     `);
     // Usamos 'ON CONFLICT DO NOTHING' para evitar erros se o usuário já existir
-    await pool.query("INSERT INTO usuarios (email, senha, nome, tipo, turma) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (email) DO NOTHING", ['aluno@iva.com', hashedDefaultPassword, 'Gabriel (Novo)', 'aluno', 'A']);
-    await pool.query("INSERT INTO usuarios (email, senha, nome, tipo, turma) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (email) DO NOTHING", ['veterano@iva.com', hashedDefaultPassword, 'Veterano', 'aluno', 'B']);
+    await pool.query("INSERT INTO usuarios (email, senha, nome, tipo, turma) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (email) DO NOTHING", ['aluno@iva.com', hashedDefaultPassword, 'Gabriel (Novo)', 'aluno', 'T-I2025']);
+    await pool.query("INSERT INTO usuarios (email, senha, nome, tipo, turma) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (email) DO NOTHING", ['veterano@iva.com', hashedDefaultPassword, 'Veterano', 'aluno', 'T-I2026']);
     await pool.query("INSERT INTO usuarios (email, senha, nome, tipo, turma) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (email) DO NOTHING", ['isaack@iva.com', hashedDefaultPassword, 'Prof. Isaack', 'professor', '']);
-    await pool.query("INSERT INTO usuarios (email, senha, nome, tipo, turma) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (email) DO NOTHING", ['maria@iva.com', hashedDefaultPassword, 'Maria Silva', 'aluno', 'A']);
-    await pool.query("INSERT INTO usuarios (email, senha, nome, tipo, turma) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (email) DO NOTHING", ['joao@vale.com', hashedDefaultPassword, 'João Santos', 'aluno', 'B']);
-    await pool.query("INSERT INTO usuarios (email, senha, nome, tipo, turma) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (email) DO NOTHING", ['amorosomhott@iva.com', hashedDefaultPassword, 'Amoroso Mhota', 'aluno', 'B']);
+    await pool.query("INSERT INTO usuarios (email, senha, nome, tipo, turma) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (email) DO NOTHING", ['maria@iva.com', hashedDefaultPassword, 'Maria Silva', 'aluno', 'T-I2025']);
+    await pool.query("INSERT INTO usuarios (email, senha, nome, tipo, turma) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (email) DO NOTHING", ['joao@vale.com', hashedDefaultPassword, 'João Santos', 'aluno', 'T-I2026']);
+    await pool.query("INSERT INTO usuarios (email, senha, nome, tipo, turma) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (email) DO NOTHING", ['amorosomhott@iva.com', hashedDefaultPassword, 'Amoroso Mhota', 'aluno', 'T-I2026']);
 
     await pool.query(`
         CREATE TABLE IF NOT EXISTS materias (
@@ -109,12 +109,12 @@ const initializeDatabase = async () => {
     if (materiasResult.rows[0].count === '0') {
         console.log("Populando matérias padrão para o Prof. Isaack...");
         const sql = "INSERT INTO materias (nome, professor, turma, horario) VALUES ($1, $2, $3, $4)";
-        await pool.query(sql, ['Teologia Sistemática', 'Prof. Isaack', 'A', 'Seg 19:00']);
-        await pool.query(sql, ['Hermenêutica', 'Prof. Isaack', 'A', 'Ter 19:00']);
-        await pool.query(sql, ['Hebraico', 'Prof. Isaack', 'A', 'Qua 19:00']);
-        await pool.query(sql, ['Teologia Sistemática', 'Prof. Isaack', 'B', 'Ter 20:00']);
-        await pool.query(sql, ['Grego', 'Prof. Isaack', 'B', 'Sex 19:00']);
-        await pool.query(sql, ['Homilética', 'Prof. Isaack', 'B', 'Qua 20:00']);
+        await pool.query(sql, ['Teologia Sistemática', 'Prof. Isaack', 'T-I2025', 'Seg 19:00']);
+        await pool.query(sql, ['Hermenêutica', 'Prof. Isaack', 'T-I2025', 'Ter 19:00']);
+        await pool.query(sql, ['Hebraico', 'Prof. Isaack', 'T-I2025', 'Qua 19:00']);
+        await pool.query(sql, ['Teologia Sistemática', 'Prof. Isaack', 'T-I2026', 'Ter 20:00']);
+        await pool.query(sql, ['Grego', 'Prof. Isaack', 'T-I2026', 'Sex 19:00']);
+        await pool.query(sql, ['Homilética', 'Prof. Isaack', 'T-N2026', 'Qua 20:00']);
     }
 
     await pool.query(`
@@ -128,10 +128,10 @@ const initializeDatabase = async () => {
             UNIQUE(aluno_id, disciplina, data)
         )
     `);
-    await pool.query("INSERT INTO frequencia (aluno_id, disciplina, data, status, turma) VALUES (1, 'Teologia Sistemática', '2023-11-01', 'Presente', 'A') ON CONFLICT DO NOTHING");
-    await pool.query("INSERT INTO frequencia (aluno_id, disciplina, data, status, turma) VALUES (1, 'Teologia Sistemática', '2023-11-08', 'Presente', 'A') ON CONFLICT DO NOTHING");
-    await pool.query("INSERT INTO frequencia (aluno_id, disciplina, data, status, turma) VALUES (1, 'Teologia Sistemática', '2023-11-15', 'Ausente', 'A') ON CONFLICT DO NOTHING");
-    await pool.query("INSERT INTO frequencia (aluno_id, disciplina, data, status, turma) VALUES (1, 'História de Israel', '2023-11-02', 'Presente', 'A') ON CONFLICT DO NOTHING");
+    await pool.query("INSERT INTO frequencia (aluno_id, disciplina, data, status, turma) VALUES (1, 'Teologia Sistemática', '2023-11-01', 'Presente', 'T-I2025') ON CONFLICT DO NOTHING");
+    await pool.query("INSERT INTO frequencia (aluno_id, disciplina, data, status, turma) VALUES (1, 'Teologia Sistemática', '2023-11-08', 'Presente', 'T-I2025') ON CONFLICT DO NOTHING");
+    await pool.query("INSERT INTO frequencia (aluno_id, disciplina, data, status, turma) VALUES (1, 'Teologia Sistemática', '2023-11-15', 'Ausente', 'T-I2025') ON CONFLICT DO NOTHING");
+    await pool.query("INSERT INTO frequencia (aluno_id, disciplina, data, status, turma) VALUES (1, 'História de Israel', '2023-11-02', 'Presente', 'T-I2025') ON CONFLICT DO NOTHING");
 
     await pool.query(`
         CREATE TABLE IF NOT EXISTS notas (
@@ -251,7 +251,7 @@ app.post('/register', async (req, res) => {
     const hashedPassword = await bcrypt.hash(senha, salt);
 
     const sql = "INSERT INTO usuarios (email, senha, nome, tipo, turma) VALUES ($1, $2, $3, $4, $5) RETURNING id";
-    const params = [formattedEmail, hashedPassword, nome, tipo || 'aluno', turma || 'A']; // Padrão Turma A se não informado
+    const params = [formattedEmail, hashedPassword, nome, tipo || 'aluno', turma || 'T-I2025']; // Padrão Turma T-I2025 se não informado
 
     try {
         const result = await pool.query(sql, params);

@@ -16,21 +16,44 @@ const pool = new pg.Pool({
 // Você pode preencher este array com os dados dos seus alunos.
 // A senha padrão será "senha123" para todos, e será criptografada.
 const alunosParaImportar = [
-    { nome: "Ana Paula", email: "ana.paula@iva.com", turma: "A" },
-    { nome: "Bruno Costa", email: "bruno.costa@iva.com", turma: "B" },
-    { nome: "Carla Dias", email: "carla.dias@iva.com", turma: "A" },
-    { nome: "Daniel Rocha", email: "daniel.rocha@iva.com", turma: "B" },
-    { nome: "Eduarda Lima", email: "eduarda.lima@iva.com", turma: "A" },
+    // Turma T-I2025
+    { nome: "Ana Paula", email: "ana.paula@iva.com", turma: "T-I2025" },
+    { nome: "Carla Dias", email: "carla.dias@iva.com", turma: "T-I2025" },
+    { nome: "Eduarda Lima", email: "eduarda.lima@iva.com", turma: "T-I2025" },
+    // Turma T-I2026
+    { nome: "Bruno Costa", email: "bruno.costa@iva.com", turma: "T-I2026" },
+    { nome: "Daniel Rocha", email: "daniel.rocha@iva.com", turma: "T-I2026" },
+    // Turma T-N2026
+    { nome: "Fabiana Souza", email: "fabiana.souza@iva.com", turma: "T-N2026" },
     // Adicione mais alunos aqui
 ];
 
 const importarAlunos = async () => {
+    const turmaParaImportar = process.argv[2];
+
+    if (!turmaParaImportar) {
+        console.error("----------------------------------------------------------------");
+        console.error("⚠️  Por favor, especifique uma turma para importar.");
+        console.error("   Exemplo: node importarAlunos.js T-I2025");
+        console.error("   Turmas disponíveis na lista: T-I2025, T-I2026, T-N2026");
+        console.error("----------------------------------------------------------------");
+        process.exit(1);
+    }
+
+    const alunosFiltrados = alunosParaImportar.filter(aluno => aluno.turma === turmaParaImportar);
+
+    if (alunosFiltrados.length === 0) {
+        console.warn(`🟡 Nenhum aluno encontrado para a turma '${turmaParaImportar}' na lista de importação.`);
+        await pool.end();
+        return;
+    }
+
     if (!DATABASE_URL) {
         console.error("❌ ERRO FATAL: A variável de ambiente DATABASE_URL não está definida.");
         process.exit(1);
     }
 
-    console.log(`Iniciando importação de ${alunosParaImportar.length} alunos...`);
+    console.log(`Iniciando importação de ${alunosFiltrados.length} alunos para a turma ${turmaParaImportar}...`);
 
     const defaultPassword = "senha123"; // Senha padrão para os novos alunos
     const salt = await bcrypt.genSalt(10);
@@ -39,7 +62,7 @@ const importarAlunos = async () => {
     let importedCount = 0;
     let errorCount = 0;
 
-    for (const aluno of alunosParaImportar) {
+    for (const aluno of alunosFiltrados) {
         const formattedEmail = aluno.email.includes('@') ? aluno.email : `${aluno.email}@iva.com`;
         const sql = `
             INSERT INTO usuarios (nome, email, senha, tipo, turma)
@@ -47,7 +70,7 @@ const importarAlunos = async () => {
             ON CONFLICT (email) DO UPDATE SET
                 nome = EXCLUDED.nome,
                 turma = EXCLUDED.turma,
-                senha = EXCLUDED.senha # Atualiza a senha mesmo em caso de conflito, se necessário
+                senha = EXCLUDED.senha // Atualiza a senha para o padrão em caso de conflito
             RETURNING id
         `;
         const params = [aluno.nome, formattedEmail, hashedPassword, 'aluno', aluno.turma];
@@ -63,7 +86,7 @@ const importarAlunos = async () => {
     }
 
     console.log(`\n--- Resumo da Importação ---`);
-    console.log(`Total de alunos processados: ${alunosParaImportar.length}`);
+    console.log(`Total de alunos processados para a turma ${turmaParaImportar}: ${alunosFiltrados.length}`);
     console.log(`Alunos importados/atualizados: ${importedCount}`);
     console.log(`Alunos com erro: ${errorCount}`);
     await pool.end();
