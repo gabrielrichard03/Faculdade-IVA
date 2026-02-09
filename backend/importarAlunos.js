@@ -15,17 +15,28 @@ const pool = new pg.Pool({
 // --- DADOS DOS ALUNOS PARA IMPORTAR ---
 // Você pode preencher este array com os dados dos seus alunos.
 // A senha padrão será "senha123" para todos, e será criptografada.
+// IMPORTANTE: Preencha com a lista de alunos fornecida por Isaack Ramon.
 const alunosParaImportar = [
-    // Turma T-I2025
-    { nome: "Ana Paula", email: "ana.paula@iva.com", turma: "T-I2025" },
-    { nome: "Carla Dias", email: "carla.dias@iva.com", turma: "T-I2025" },
-    { nome: "Eduarda Lima", email: "eduarda.lima@iva.com", turma: "T-I2025" },
-    // Turma T-I2026
-    { nome: "Bruno Costa", email: "bruno.costa@iva.com", turma: "T-I2026" },
-    { nome: "Daniel Rocha", email: "daniel.rocha@iva.com", turma: "T-I2026" },
-    // Turma T-N2026
-    { nome: "Fabiana Souza", email: "fabiana.souza@iva.com", turma: "T-N2026" },
-    // Adicione mais alunos aqui
+    // --- TURMA T-I2025 ---
+    // Substitua pelos nomes e e-mails reais dos alunos desta turma.
+    { nome: "Nome Aluno 1 T-I2025", email: "aluno1.ti2025@iva.com.br", turma: "T-I2025" },
+    { nome: "Nome Aluno 2 T-I2025", email: "aluno2.ti2025@iva.com.br", turma: "T-I2025" },
+    { nome: "Nome Aluno 3 T-I2025", email: "aluno3.ti2025@iva.com.br", turma: "T-I2025" },
+    // ... adicione o restante dos alunos da T-I2025 aqui
+
+    // --- TURMA T-I2026 ---
+    // Substitua pelos nomes e e-mails reais dos alunos desta turma.
+    { nome: "Nome Aluno 1 T-I2026", email: "aluno1.ti2026@iva.com.br", turma: "T-I2026" },
+    { nome: "Nome Aluno 2 T-I2026", email: "aluno2.ti2026@iva.com.br", turma: "T-I2026" },
+    { nome: "Nome Aluno 3 T-I2026", email: "aluno3.ti2026@iva.com.br", turma: "T-I2026" },
+    // ... adicione o restante dos alunos da T-I2026 aqui
+
+    // --- TURMA T-N2026 ---
+    // Substitua pelos nomes e e-mails reais dos alunos desta turma.
+    { nome: "Nome Aluno 1 T-N2026", email: "aluno1.tn2026@iva.com.br", turma: "T-N2026" },
+    { nome: "Nome Aluno 2 T-N2026", email: "aluno2.tn2026@iva.com.br", turma: "T-N2026" },
+    { nome: "Nome Aluno 3 T-N2026", email: "aluno3.tn2026@iva.com.br", turma: "T-N2026" },
+    // ... adicione o restante dos alunos da T-N2026 aqui
 ];
 
 const importarAlunos = async () => {
@@ -63,7 +74,7 @@ const importarAlunos = async () => {
     let errorCount = 0;
 
     for (const aluno of alunosFiltrados) {
-        const formattedEmail = aluno.email.includes('@') ? aluno.email : `${aluno.email}@iva.com`;
+        const formattedEmail = aluno.email.includes('@') ? aluno.email : `${aluno.email}@iva.com.br`;
         const sql = `
             INSERT INTO usuarios (nome, email, senha, tipo, turma)
             VALUES ($1, $2, $3, $4, $5)

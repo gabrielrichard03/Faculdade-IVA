@@ -5,8 +5,8 @@ import 'dotenv/config'; // Importa e carrega as variáveis de ambiente do .env
 // --- DADOS DO ADMINISTRADOR ---
 const adminUser = {
     nome: "Gabriel (Admin)",
-    email: "gabriel@iva.com",
-    senha: "uma_senha_muito_forte", // Troque por uma senha segura
+    email: "gabriel@iva.com.br", // E-mail de admin principal
+    senha: "Admin@2024!", // Senha temporária. Lembre-se de usar esta para o primeiro login.
     tipo: "professor", // Admin tem perfil de professor para ter acesso a tudo
     turma: "" // Admin não pertence a uma turma específica
 };

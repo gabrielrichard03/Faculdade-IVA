@@ -215,8 +215,8 @@ app.post('/login', async (req, res) => {
     const { email, password, senha } = req.body;
     const userPassword = password || senha; // Aceita 'password' ou 'senha' vindo do frontend
 
-    // Adiciona @iva.com se o email não contiver @
-    const formattedEmail = email.includes('@') ? email : `${email}@iva.com`;
+    // Adiciona @iva.com.br se o email não contiver @
+    const formattedEmail = email.includes('@') ? email : `${email}@iva.com.br`;
 
     try {
         // 1. Busca o usuário pelo e-mail
@@ -243,8 +243,8 @@ app.post('/login', async (req, res) => {
 // Rota para Registrar Novo Usuário (CRIAR LOGIN)
 app.post('/register', async (req, res) => {
     const { email, senha, nome, tipo, turma } = req.body;
-    // Garante que o email tenha o domínio @iva.com
-    const formattedEmail = email.includes('@') ? email : `${email}@iva.com`;
+    // Garante que o email tenha o domínio @iva.com.br
+    const formattedEmail = email.includes('@') ? email : `${email}@iva.com.br`;
 
     // Criptografa a senha antes de salvar
     const salt = await bcrypt.genSalt(10);
